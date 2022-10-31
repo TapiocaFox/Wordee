@@ -1,4 +1,5 @@
 import argparse, os, random, requests, json, os, signal, sys, vlc, textwrap
+from googletrans import Translator
 from rich.console import Console
 from rich.prompt import Prompt
 
@@ -27,11 +28,15 @@ parser.add_argument("--hide", dest="hideDictionary", action='store_true',
 parser.add_argument("--phonetic", dest="phonetic", action='store_true',
                     help="Play phonetic sound.")
 
+parser.add_argument("--translate", dest="translateDestination", metavar="LANG",
+        help="Translate destination language. For example \"ja\", \"ko\", \"zh-tw\".")
+
 signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == "__main__":
     console = Console()
     args = parser.parse_args()
+
     words = args.filename.read().splitlines()
     words = list(word for word in words if word)
     # console.print(lines)
@@ -39,6 +44,12 @@ if __name__ == "__main__":
     console.print("Total", len(words), "words in the file.")
     console.print(">", args.filename.name, style="markdown.h1")
     console.print("")
+    if args.translateDestination:
+        translator = Translator()
+        console.print(translator.translate("You have enabled the Translation.", dest=args.translateDestination).text)
+        console.print(translator.translate("Translation destionation: ", dest=args.translateDestination).text+"\""+args.translateDestination+"\"")
+        # console.print("Translation destionation: \""+args.translateDestination+"\"")
+        console.print("")
     while True:
         pickNextWord = Prompt.ask("Pick next word?", default="Y")
         if pickNextWord != "Y" and pickNextWord != "y":
@@ -46,6 +57,8 @@ if __name__ == "__main__":
         os.system('clear')
         wordIndex = random.choice(range(len(words)))
         word = words[wordIndex]
+        if args.translateDestination:
+            wordTranslated = translator.translate(word, dest=args.translateDestination).text
 
         console.print(word.capitalize(), style="markdown.h1")
 
@@ -74,7 +87,11 @@ if __name__ == "__main__":
             if(args.hideDictionary):
                 input("Press Enter to show dictionary results...")
             os.system('clear')
-            console.print(word.capitalize()+" ("+str(wordIndex+1)+")", style="markdown.h1")
+
+            if args.translateDestination:
+                console.print(word.capitalize()+" "+wordTranslated+" ("+str(wordIndex+1)+")", style="markdown.h1")
+            else:
+                console.print(word.capitalize()+" ("+str(wordIndex+1)+")", style="markdown.h1")
 
             
             if "phonetic" in responseJSON:
@@ -110,7 +127,12 @@ if __name__ == "__main__":
             if(args.hideDictionary):
                 input("Press Enter to show dictionary results...")
             os.system('clear')
-            console.print(word.capitalize()+" ("+str(wordIndex+1)+")", style="markdown.h1")
+            
+            if args.translateDestination:
+                console.print(word.capitalize()+" "+wordTranslated+" ("+str(wordIndex+1)+")", style="markdown.h1")
+            else:
+                console.print(word.capitalize()+" ("+str(wordIndex+1)+")", style="markdown.h1")
+
             console.print("Status code: "+str(response.status_code), style="red")
             if "title" in responseJSON:
                 console.print(textWrapper.fill(responseJSON["title"]), style="bold")
