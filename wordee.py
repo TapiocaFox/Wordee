@@ -30,7 +30,7 @@ parser.add_argument("--translate", dest="translateDestination", metavar="LANG",
 #         help="API key for https://newsapi.org.")
 
 parser.add_argument("--news", dest="alwaysShowNews", action='store_true',
-        help="Always show news related to the word. Can be a little bit slower.")
+        help="Always show the news related to the word. Can be a little bit slower.")
 
 wordResponseJSONCache = {}
 wordNewsResultsCache = {}
