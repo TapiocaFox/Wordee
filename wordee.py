@@ -38,7 +38,8 @@ def is_valid_file(parser, arg):
 
 def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, translator=None, translateDestination=None):
         if translator!=None:
-            wordTranslated = translator.translate(word, dest=translateDestination).text
+            wordTranslation = translator.translate(word, dest=translateDestination)
+            wordTranslated = wordTranslation.text
 
         if word in wordResponseJSONCache:
             responseJSON = wordResponseJSONCache[word]
@@ -125,6 +126,9 @@ def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, t
                 console.print(textWrapper.fill(responseJSON["resolution"]), style="bright_magenta")
             console.print("")
             console.print("> [link=https://www.google.com/search?q=define+"+word+"]Show the definition on google.[/link]\n")
+
+        # console.print(responseJSON)
+        # console.print(wordTranslation.extra_data)
 
 def start():
     args = parser.parse_args()
