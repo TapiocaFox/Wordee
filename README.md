@@ -1,5 +1,5 @@
 # Wordee
-Wordee is a word picker with dictionary api attached. Help you memorize vocabularies using CLI.
+Wordee is a word picker with dictionary and news attached. Help you memorize vocabularies using CLI.
 
 ![](/imgs/screenshot_5.png)
 

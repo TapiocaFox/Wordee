@@ -11,7 +11,7 @@ bookmarked_surfix = "_bookmarked"
 textWrapper = textwrap.TextWrapper(initial_indent=" ", subsequent_indent=" ")
 textWrapperDoubleIndents = textwrap.TextWrapper(initial_indent="    ", subsequent_indent="    ")
 
-parser = argparse.ArgumentParser(description='Wordee, a word picker with dictionary api attached.')
+parser = argparse.ArgumentParser(description='Wordee, a word picker with with dictionary and news attached.')
 
 parser.add_argument("-i", dest="filename", required=True,
                     help="Specify input text file.", metavar="FILE",
