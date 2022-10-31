@@ -4,6 +4,27 @@ from rich.console import Console
 from rich.prompt import Prompt
 
 console = Console()
+bookmarked_surfix = "_bookmarked"
+
+textWrapper = textwrap.TextWrapper(initial_indent=" ", subsequent_indent=" ")
+textWrapperDoubleIndents = textwrap.TextWrapper(initial_indent="    ", subsequent_indent="    ")
+
+parser = argparse.ArgumentParser(description='Wordee, a word picker with dictionary api attached.')
+
+parser.add_argument("-i", dest="filename", required=True,
+                    help="Specify input text file.", metavar="FILE",
+                    type=lambda x: is_valid_file(parser, x))
+
+parser.add_argument("--hide", dest="hideDictionary", action='store_true',
+                    help="Hide dictionary result. Until enter pressed.")
+
+# parser.add_argument("--phonetic", dest="phonetic", action='store_true',
+#                     help="Play phonetic sound.")
+
+parser.add_argument("--translate", dest="translateDestination", metavar="LANG",
+        help="Translate destination language. For example \"ja\", \"ko\", \"zh-tw\".")
+
+wordResponseJSONCache = {}
 
 def signal_handler(sig, frame):
     print('\nYou pressed Ctrl+C!')
@@ -19,9 +40,14 @@ def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, t
         if translator!=None:
             wordTranslated = translator.translate(word, dest=translateDestination).text
 
-        response = requests.get("https://api.dictionaryapi.dev/api/v2/entries/en/"+word)
-    
-        responseJSON = json.loads(response.text)
+        if word in wordResponseJSONCache:
+            responseJSON = wordResponseJSONCache[word]
+            ok = True
+        else:
+            response = requests.get("https://api.dictionaryapi.dev/api/v2/entries/en/"+word)
+            ok = response.ok
+            responseJSON = json.loads(response.text)
+            wordResponseJSONCache[word] = responseJSON
 
         # console.print(type(responseJSON) is list)
 
@@ -38,7 +64,7 @@ def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, t
         #             mediaPlayer.play()
         #             break
 
-        if response.ok:
+        if ok:
             if type(responseJSON) is list and len(responseJSON) > 0:
                 responseJSON = responseJSON[0]
             if(hideDictionary):
@@ -103,14 +129,16 @@ def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, t
 def start():
     args = parser.parse_args()
 
+    bookmarkedWordsFilename = args.filename.name+bookmarked_surfix+".txt"
+
     words = args.filename.read().splitlines()
     words = list(word for word in words if word)
-    # console.print(lines)
 
     console.print("[bold]📖 Wordee[/bold]\nA word picker with dictionary api attached.\ncopyright©2022 magneticchen. GPLv3 License.\n")
     console.print(textWrapper.fill("Total "+str(len(words))+" words in the file."))
     console.print(textWrapper.fill("> "+args.filename.name), style="markdown.h1")
     console.print("")
+
     translator = None
     if args.translateDestination:
         translator = Translator()
@@ -118,36 +146,54 @@ def start():
         console.print(textWrapper.fill(translator.translate("Translation destionation: ", dest=args.translateDestination).text+"\""+args.translateDestination+"\""))
         # console.print("Translation destionation: \""+args.translateDestination+"\"")
         console.print("")
+    # console.print(lines)
+
+    if os.path.isfile(bookmarkedWordsFilename):
+        with open(bookmarkedWordsFilename, 'r+') as bookmarkedFile:
+            bookmarkedWords = bookmarkedFile.read().splitlines()
+            bookmarkedWords = list(word.lower() for word in bookmarkedWords if word)
+    else:
+        bookmarkedWords = []
+    word = None
+    wordIndex = -1
     while True:
-        pickNextWord = Prompt.ask("Pick next word?", default="Y")
-        if pickNextWord != "Y" and pickNextWord != "y":
+        dictionary_bookmarked_surfix = ""
+        if word == None:
+            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]Q[/bold]]uit\n", default="N")
+            dictionary_bookmarked_surfix = ""
+        elif word.lower() not in bookmarkedWords:
+            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]B[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
+            dictionary_bookmarked_surfix = ""
+        else:
+            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, Un[[bold]b[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
+            dictionary_bookmarked_surfix = " [green bold]•[/green bold]"
+
+        if code.lower() == "q":
             break
-        os.system('clear')
-        wordIndex = random.choice(range(len(words)))
-        word = words[wordIndex]
+        elif code.lower() == "b":
+            if word == None:
+                console.print("Word not selected.", style="red")
+            elif word.lower() not in bookmarkedWords:
+                with open(bookmarkedWordsFilename, 'w+') as bookmarkedFile:
+                    bookmarkedWords.append(word.lower())
+                    bookmarkedFile.write("\n".join(bookmarkedWords))
+                    console.print(bookmarkedWords)
+                    dictionary_bookmarked_surfix = " [green bold]•[/green bold]" if word.lower() in bookmarkedWords else ""
+                    print_word_with_dictionary(word, "("+str(wordIndex+1)+" of "+str(len(words))+")"+dictionary_bookmarked_surfix, False, translator, args.translateDestination)
+            else:
+                with open(bookmarkedWordsFilename, 'w+') as bookmarkedFile:
+                    bookmarkedWords.remove(word.lower())
+                    bookmarkedFile.write("\n".join(bookmarkedWords))
+                    dictionary_bookmarked_surfix = " [green bold]•[/green bold]" if word.lower() in bookmarkedWords else ""
+                    print_word_with_dictionary(word, "("+str(wordIndex+1)+" of "+str(len(words))+")"+dictionary_bookmarked_surfix, False, translator, args.translateDestination)
 
-        console.print(word.capitalize(), style="markdown.h1")
+        else:
+            os.system('clear')
+            wordIndex = random.choice(range(len(words)))
+            word = words[wordIndex]
+            console.print(word.capitalize(), style="markdown.h1")
+            print_word_with_dictionary(word, "("+str(wordIndex+1)+" of "+str(len(words))+")"+dictionary_bookmarked_surfix, args.hideDictionary, translator, args.translateDestination)
 
-        print_word_with_dictionary(word, "("+str(wordIndex+1)+" of "+str(len(words))+")", args.hideDictionary, translator, args.translateDestination)
-
-
-textWrapper = textwrap.TextWrapper(initial_indent=" ", subsequent_indent=" ")
-textWrapperDoubleIndents = textwrap.TextWrapper(initial_indent="    ", subsequent_indent="    ")
-
-parser = argparse.ArgumentParser(description='Wordee, a word picker with dictionary api attached.')
-
-parser.add_argument("-i", dest="filename", required=True,
-                    help="Specify input text file.", metavar="FILE",
-                    type=lambda x: is_valid_file(parser, x))
-
-parser.add_argument("--hide", dest="hideDictionary", action='store_true',
-                    help="Hide dictionary result. Until enter pressed.")
-
-# parser.add_argument("--phonetic", dest="phonetic", action='store_true',
-#                     help="Play phonetic sound.")
-
-parser.add_argument("--translate", dest="translateDestination", metavar="LANG",
-        help="Translate destination language. For example \"ja\", \"ko\", \"zh-tw\".")
 
 signal.signal(signal.SIGINT, signal_handler)
 
