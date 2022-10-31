@@ -230,6 +230,7 @@ def start():
             # word = None
             wordIndex = -1
         elif code.lower() == "s":
+            console.print("")
             print_news_for_the_word(word)
 
         elif code.lower() == "b":
