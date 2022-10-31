@@ -3,6 +3,8 @@ from googletrans import Translator
 from rich.console import Console
 from rich.prompt import Prompt
 
+console = Console()
+
 def signal_handler(sig, frame):
     print('\nYou pressed Ctrl+C!')
     sys.exit(0)
@@ -13,56 +15,9 @@ def is_valid_file(parser, arg):
     else:
         return open(arg, 'r')  # return an open file handle
 
-textWrapper = textwrap.TextWrapper(initial_indent=" ", subsequent_indent=" ")
-textWrapperDoubleIndents = textwrap.TextWrapper(initial_indent="    ", subsequent_indent="    ")
-
-parser = argparse.ArgumentParser(description='Wordee, a word picker with dictionary api attached.')
-
-parser.add_argument("-i", dest="filename", required=True,
-                    help="Specify input text file.", metavar="FILE",
-                    type=lambda x: is_valid_file(parser, x))
-
-parser.add_argument("--hide", dest="hideDictionary", action='store_true',
-                    help="Hide dictionary result. Until enter pressed.")
-
-# parser.add_argument("--phonetic", dest="phonetic", action='store_true',
-#                     help="Play phonetic sound.")
-
-parser.add_argument("--translate", dest="translateDestination", metavar="LANG",
-        help="Translate destination language. For example \"ja\", \"ko\", \"zh-tw\".")
-
-signal.signal(signal.SIGINT, signal_handler)
-
-if __name__ == "__main__":
-    console = Console()
-    args = parser.parse_args()
-
-    words = args.filename.read().splitlines()
-    words = list(word for word in words if word)
-    # console.print(lines)
-
-    console.print("[bold]📖 Wordee[/bold]\nA word picker with dictionary api attached.\ncopyright©2022 magneticchen. GPLv3 License.\n")
-    console.print(textWrapper.fill("Total "+str(len(words))+" words in the file."))
-    console.print(textWrapper.fill("> "+args.filename.name), style="markdown.h1")
-    console.print("")
-    if args.translateDestination:
-        translator = Translator()
-        console.print(textWrapper.fill(translator.translate("You have enabled the Translation.", dest=args.translateDestination).text))
-        console.print(textWrapper.fill(translator.translate("Translation destionation: ", dest=args.translateDestination).text+"\""+args.translateDestination+"\""))
-        # console.print("Translation destionation: \""+args.translateDestination+"\"")
-        console.print("")
-    while True:
-        pickNextWord = Prompt.ask("Pick next word?", default="Y")
-        if pickNextWord != "Y" and pickNextWord != "y":
-            break
-        os.system('clear')
-        wordIndex = random.choice(range(len(words)))
-        word = words[wordIndex]
-
-        console.print(word.capitalize(), style="markdown.h1")
-
-        if args.translateDestination:
-            wordTranslated = translator.translate(word, dest=args.translateDestination).text
+def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, translator=None, translateDestination=None):
+        if translator!=None:
+            wordTranslated = translator.translate(word, dest=translateDestination).text
 
         response = requests.get("https://api.dictionaryapi.dev/api/v2/entries/en/"+word)
     
@@ -86,14 +41,14 @@ if __name__ == "__main__":
         if response.ok:
             if type(responseJSON) is list and len(responseJSON) > 0:
                 responseJSON = responseJSON[0]
-            if(args.hideDictionary):
+            if(hideDictionary):
                 input("Press enter to show dictionary results...")
             os.system('clear')
 
-            if args.translateDestination:
-                console.print(word.capitalize()+" [magenta]"+wordTranslated+"[/magenta] ("+str(wordIndex+1)+" of "+str(len(words))+")", style="markdown.h1")
+            if translator!=None:
+                console.print(word.capitalize()+" [magenta]"+wordTranslated+"[/magenta] "+wordDescription, style="markdown.h1")
             else:
-                console.print(word.capitalize()+" ("+str(wordIndex+1)+" of "+str(len(words))+")", style="markdown.h1")
+                console.print(word.capitalize()+" "+wordDescription, style="markdown.h1")
 
             
             if "phonetic" in responseJSON:
@@ -126,14 +81,14 @@ if __name__ == "__main__":
                 console.print("> [link=https://www.google.com/search?q=define+"+word+"]Show the definition on google.[/link]\n")
 
         else:
-            if(args.hideDictionary):
+            if(hideDictionary):
                 input("Press enter to show dictionary results...")
             os.system('clear')
             
             if args.translateDestination:
-                console.print(word.capitalize()+" [magenta]"+wordTranslated+"[magenta] ("+str(wordIndex+1)+" of "+str(len(words))+")", style="markdown.h1")
+                console.print(word.capitalize()+" [magenta]"+wordTranslated+"[magenta] "+wordDescription, style="markdown.h1")
             else:
-                console.print(word.capitalize()+" ("+str(wordIndex+1)+" of "+str(len(words))+")", style="markdown.h1")
+                console.print(word.capitalize()+" "+wordDescription, style="markdown.h1")
 
             console.print("Status code: "+str(response.status_code), style="red")
             if "title" in responseJSON:
@@ -144,5 +99,57 @@ if __name__ == "__main__":
                 console.print(textWrapper.fill(responseJSON["resolution"]), style="bright_magenta")
             console.print("")
             console.print("> [link=https://www.google.com/search?q=define+"+word+"]Show the definition on google.[/link]\n")
-            
 
+def start():
+    args = parser.parse_args()
+
+    words = args.filename.read().splitlines()
+    words = list(word for word in words if word)
+    # console.print(lines)
+
+    console.print("[bold]📖 Wordee[/bold]\nA word picker with dictionary api attached.\ncopyright©2022 magneticchen. GPLv3 License.\n")
+    console.print(textWrapper.fill("Total "+str(len(words))+" words in the file."))
+    console.print(textWrapper.fill("> "+args.filename.name), style="markdown.h1")
+    console.print("")
+    translator = None
+    if args.translateDestination:
+        translator = Translator()
+        console.print(textWrapper.fill(translator.translate("You have enabled the Translation.", dest=args.translateDestination).text))
+        console.print(textWrapper.fill(translator.translate("Translation destionation: ", dest=args.translateDestination).text+"\""+args.translateDestination+"\""))
+        # console.print("Translation destionation: \""+args.translateDestination+"\"")
+        console.print("")
+    while True:
+        pickNextWord = Prompt.ask("Pick next word?", default="Y")
+        if pickNextWord != "Y" and pickNextWord != "y":
+            break
+        os.system('clear')
+        wordIndex = random.choice(range(len(words)))
+        word = words[wordIndex]
+
+        console.print(word.capitalize(), style="markdown.h1")
+
+        print_word_with_dictionary(word, "("+str(wordIndex+1)+" of "+str(len(words))+")", args.hideDictionary, translator, args.translateDestination)
+
+
+textWrapper = textwrap.TextWrapper(initial_indent=" ", subsequent_indent=" ")
+textWrapperDoubleIndents = textwrap.TextWrapper(initial_indent="    ", subsequent_indent="    ")
+
+parser = argparse.ArgumentParser(description='Wordee, a word picker with dictionary api attached.')
+
+parser.add_argument("-i", dest="filename", required=True,
+                    help="Specify input text file.", metavar="FILE",
+                    type=lambda x: is_valid_file(parser, x))
+
+parser.add_argument("--hide", dest="hideDictionary", action='store_true',
+                    help="Hide dictionary result. Until enter pressed.")
+
+# parser.add_argument("--phonetic", dest="phonetic", action='store_true',
+#                     help="Play phonetic sound.")
+
+parser.add_argument("--translate", dest="translateDestination", metavar="LANG",
+        help="Translate destination language. For example \"ja\", \"ko\", \"zh-tw\".")
+
+signal.signal(signal.SIGINT, signal_handler)
+
+if __name__ == "__main__":
+    start()
