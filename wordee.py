@@ -67,7 +67,7 @@ def print_news_for_the_word(word):
     newsResults = get_news_for_the_word(word)
     console.print("Related news:", style="bold")
     for i, newsResult in enumerate(newsResults[:5]):
-        title = newsResult["title"].replace(word.capitalize(), "[bold]"+word+"[/bold]")
+        title = newsResult["title"].replace(word.capitalize(), "[bold]"+word.capitalize()+"[/bold]")
         title = title.replace(word.lower(), "[bold]"+word+"[/bold]")
         console.print(" %s. "%(i+1)+"[link="+newsResult["link"]+"]"+title)
     console.print("")
