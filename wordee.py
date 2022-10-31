@@ -41,13 +41,14 @@ if __name__ == "__main__":
     words = list(word for word in words if word)
     # console.print(lines)
 
-    console.print("Total", len(words), "words in the file.")
-    console.print(">", args.filename.name, style="markdown.h1")
+    console.print("[bold]📖 Wordee[/bold]\nA word picker with dictionary api attached.\ncopyright©2022 magneticchen. GPLv3 License.\n")
+    console.print(textWrapper.fill("Total "+str(len(words))+" words in the file."))
+    console.print(textWrapper.fill("> "+args.filename.name), style="markdown.h1")
     console.print("")
     if args.translateDestination:
         translator = Translator()
-        console.print(translator.translate("You have enabled the Translation.", dest=args.translateDestination).text)
-        console.print(translator.translate("Translation destionation: ", dest=args.translateDestination).text+"\""+args.translateDestination+"\"")
+        console.print(textWrapper.fill(translator.translate("You have enabled the Translation.", dest=args.translateDestination).text))
+        console.print(textWrapper.fill(translator.translate("Translation destionation: ", dest=args.translateDestination).text+"\""+args.translateDestination+"\""))
         # console.print("Translation destionation: \""+args.translateDestination+"\"")
         console.print("")
     while True:
@@ -59,7 +60,7 @@ if __name__ == "__main__":
         word = words[wordIndex]
 
         console.print(word.capitalize(), style="markdown.h1")
-        
+
         if args.translateDestination:
             wordTranslated = translator.translate(word, dest=args.translateDestination).text
 
@@ -86,7 +87,7 @@ if __name__ == "__main__":
             if type(responseJSON) is list and len(responseJSON) > 0:
                 responseJSON = responseJSON[0]
             if(args.hideDictionary):
-                input("Press Enter to show dictionary results...")
+                input("Press enter to show dictionary results...")
             os.system('clear')
 
             if args.translateDestination:
@@ -122,11 +123,11 @@ if __name__ == "__main__":
                             if "example" in definition:
                                 console.print(textWrapperDoubleIndents.fill("> "+definition["example"]), style="markdown.block_quote")
                     console.print("")
-                console.print("> [link=https://www.google.com/search?q=define+"+word+"]Show definition on google.[/link]\n")
+                console.print("> [link=https://www.google.com/search?q=define+"+word+"]Show the definition on google.[/link]\n")
 
         else:
             if(args.hideDictionary):
-                input("Press Enter to show dictionary results...")
+                input("Press enter to show dictionary results...")
             os.system('clear')
             
             if args.translateDestination:
@@ -142,6 +143,6 @@ if __name__ == "__main__":
             if "resolution" in responseJSON:
                 console.print(textWrapper.fill(responseJSON["resolution"]), style="bright_magenta")
             console.print("")
-            console.print("> [link=https://www.google.com/search?q=define+"+word+"]Show definition on google.[/link]\n")
+            console.print("> [link=https://www.google.com/search?q=define+"+word+"]Show the definition on google.[/link]\n")
             
 
