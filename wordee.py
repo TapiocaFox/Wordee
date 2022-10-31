@@ -74,13 +74,13 @@ if __name__ == "__main__":
             if(args.hideDictionary):
                 input("Press Enter to show dictionary results...")
             os.system('clear')
-            console.print(word.capitalize(), style="markdown.h1")
+            console.print(word.capitalize()+" ("+str(wordIndex+1)+")", style="markdown.h1")
 
             
             if "phonetic" in responseJSON:
-                console.print(responseJSON["phonetic"], style="markdown.block_quote")
+                console.print(responseJSON["phonetic"], style="bright_magenta")
             else:
-                console.print("phonetic not found", style="markdown.block_quote")
+                console.print("phonetic not found", style="bright_magenta")
 
             if "meanings" in responseJSON:
                 meanings = responseJSON["meanings"]
@@ -110,7 +110,15 @@ if __name__ == "__main__":
             if(args.hideDictionary):
                 input("Press Enter to show dictionary results...")
             os.system('clear')
-            console.print(word.capitalize(), style="markdown.h1")
+            console.print(word.capitalize()+" ("+str(wordIndex+1)+")", style="markdown.h1")
             console.print("Status code: "+str(response.status_code), style="red")
-            console.print(responseJSON)
+            if "title" in responseJSON:
+                console.print(textWrapper.fill(responseJSON["title"]), style="bold")
+            if "message" in responseJSON:
+                console.print(textWrapper.fill(responseJSON["message"]))
+            if "resolution" in responseJSON:
+                console.print(textWrapper.fill(responseJSON["resolution"]), style="bright_magenta")
+            console.print("")
+            console.print("[link=https://www.google.com/search?q=define+"+word+"]Show definition on google.[/link]\n")
+            
 
