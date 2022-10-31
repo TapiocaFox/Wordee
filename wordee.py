@@ -2,7 +2,9 @@ import argparse, os, random, requests, json, os, signal, sys, textwrap
 from googletrans import Translator
 from rich.console import Console
 from rich.prompt import Prompt
+from GoogleNews import GoogleNews
 
+googlenews = GoogleNews(lang="en")
 console = Console()
 bookmarked_surfix = "_bookmarked"
 
@@ -24,7 +26,22 @@ parser.add_argument("--hide", dest="hideDictionary", action='store_true',
 parser.add_argument("--translate", dest="translateDestination", metavar="LANG",
         help="Translate destination language. For example \"ja\", \"ko\", \"zh-tw\".")
 
+# parser.add_argument("--news-api-key", dest="newsApiApiKey", metavar="LANG",
+#         help="API key for https://newsapi.org.")
+
+parser.add_argument("--news", dest="alwaysShowNews", action='store_true',
+        help="Always show news related to the word. Can be a little bit slower.")
+
 wordResponseJSONCache = {}
+wordNewsResultsCache = {}
+
+def asynchronous(func):
+    async def wrapper(*args, **kwargs):
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(func, *args, **kwargs)
+            return future.result()
+
+    return wrapper
 
 def signal_handler(sig, frame):
     print('\nYou pressed Ctrl+C!')
@@ -36,7 +53,19 @@ def is_valid_file(parser, arg):
     else:
         return open(arg, 'r')  # return an open file handle
 
-def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, translator=None, translateDestination=None):
+def get_print_news_for_the_word(word):
+    if word in wordNewsResultsCache:
+        return wordNewsResultsCache[word]
+    else:
+        # response = requests.get("https://newsapi.org/v2/everything?q="+word+"&sortBy=popularity&apiKey="+newsApiApiKey)
+        googlenews.search(word)
+        newsResults = googlenews.results()
+        # console.print(googlenews.results())
+        # responseJSON = json.loads(response.text)
+        wordNewsResultsCache[word] = newsResults
+        return newsResults
+
+def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, translator=None, translateDestination=None, alwaysShowNews=None):
         if translator!=None:
             wordTranslation = translator.translate(word, dest=translateDestination)
             wordTranslated = wordTranslation.text
@@ -49,6 +78,9 @@ def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, t
             ok = response.ok
             responseJSON = json.loads(response.text)
             wordResponseJSONCache[word] = responseJSON
+
+        if alwaysShowNews:
+            newsResults = get_print_news_for_the_word(word)
 
         # console.print(type(responseJSON) is list)
 
@@ -107,12 +139,18 @@ def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, t
                     console.print("")
                 console.print("> [link=https://www.google.com/search?q=define+"+word+"]Show the definition on google.[/link]\n")
 
+            if alwaysShowNews:
+                console.print("Related news:", style="bold")
+                for i, newsResult in enumerate(newsResults[:5]):
+                    console.print(" %s. "%(i+1)+"[link="+newsResult["link"]+"]"+newsResult["title"])
+                console.print("")
+
         else:
             if(hideDictionary):
                 input("Press enter to show dictionary results...")
             os.system('clear')
             
-            if args.translateDestination:
+            if translator!=None:
                 console.print(word.capitalize()+" [magenta]"+wordTranslated+"[magenta] "+wordDescription, style="markdown.h1")
             else:
                 console.print(word.capitalize()+" "+wordDescription, style="markdown.h1")
@@ -127,6 +165,11 @@ def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, t
             console.print("")
             console.print("> [link=https://www.google.com/search?q=define+"+word+"]Show the definition on google.[/link]\n")
 
+            if alwaysShowNews:
+                console.print("Related news:", style="bold")
+                for i, newsResult in enumerate(newsResults[:5]):
+                    console.print(" %s. "%(i+1)+"[link="+newsResult["link"]+"]"+newsResult["title"])
+                console.print("")
         # console.print(responseJSON)
         # console.print(wordTranslation.extra_data)
 
@@ -166,14 +209,22 @@ def start():
             code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]Q[/bold]]uit\n", default="N")
             dictionary_bookmarked_surfix = ""
         elif word.lower() not in bookmarkedWords:
-            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]B[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
+            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]S[/bold]]how news, [[bold]B[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
             dictionary_bookmarked_surfix = ""
         else:
-            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, Un[[bold]b[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
+            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]S[/bold]]how news, Un[[bold]b[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
             dictionary_bookmarked_surfix = " [green bold]•[/green bold]"
 
         if code.lower() == "q":
             break
+
+        elif code.lower() == "s":
+            newsResults = get_print_news_for_the_word(word)
+            console.print("\nRelated news:", style="bold")
+            for i, newsResult in enumerate(newsResults[:5]):
+                console.print(" %s. "%(i+1)+"[link="+newsResult["link"]+"]"+newsResult["title"])
+            console.print("")
+
         elif code.lower() == "b":
             if word == None:
                 console.print("Word not selected.", style="red")
@@ -183,20 +234,20 @@ def start():
                     bookmarkedFile.write("\n".join(bookmarkedWords))
                     console.print(bookmarkedWords)
                     dictionary_bookmarked_surfix = " [green bold]•[/green bold]" if word.lower() in bookmarkedWords else ""
-                    print_word_with_dictionary(word, "("+str(wordIndex+1)+" of "+str(len(words))+")"+dictionary_bookmarked_surfix, False, translator, args.translateDestination)
+                    print_word_with_dictionary(word, "("+str(wordIndex+1)+" of "+str(len(words))+")"+dictionary_bookmarked_surfix, False, translator, args.translateDestination, args.alwaysShowNews)
             else:
                 with open(bookmarkedWordsFilename, 'w+') as bookmarkedFile:
                     bookmarkedWords.remove(word.lower())
                     bookmarkedFile.write("\n".join(bookmarkedWords))
                     dictionary_bookmarked_surfix = " [green bold]•[/green bold]" if word.lower() in bookmarkedWords else ""
-                    print_word_with_dictionary(word, "("+str(wordIndex+1)+" of "+str(len(words))+")"+dictionary_bookmarked_surfix, False, translator, args.translateDestination)
+                    print_word_with_dictionary(word, "("+str(wordIndex+1)+" of "+str(len(words))+")"+dictionary_bookmarked_surfix, False, translator, args.translateDestination, args.alwaysShowNews)
 
         else:
             os.system('clear')
             wordIndex = random.choice(range(len(words)))
             word = words[wordIndex]
             console.print(word.capitalize(), style="markdown.h1")
-            print_word_with_dictionary(word, "("+str(wordIndex+1)+" of "+str(len(words))+")"+dictionary_bookmarked_surfix, args.hideDictionary, translator, args.translateDestination)
+            print_word_with_dictionary(word, "("+str(wordIndex+1)+" of "+str(len(words))+")"+dictionary_bookmarked_surfix, args.hideDictionary, translator, args.translateDestination, args.alwaysShowNews)
 
 
 signal.signal(signal.SIGINT, signal_handler)
