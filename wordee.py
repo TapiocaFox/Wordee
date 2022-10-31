@@ -209,11 +209,14 @@ def start():
         if word == None:
             code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]Q[/bold]]uit\n", default="N")
             dictionary_bookmarked_surfix = ""
+        elif wordIndex == -1:
+            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]S[/bold]]how news, [[bold]Q[/bold]]uit\n", default="N")
+            dictionary_bookmarked_surfix = ""
         elif word.lower() not in bookmarkedWords:
-            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word,, [[bold]S[/bold]]how news, [[bold]B[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
+            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]S[/bold]]how news, [[bold]B[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
             dictionary_bookmarked_surfix = ""
         else:
-            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word,, [[bold]S[/bold]]how news, Un[[bold]b[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
+            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]S[/bold]]how news, Un[[bold]b[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
             dictionary_bookmarked_surfix = " [green bold]•[/green bold]"
 
         if code.lower() == "q":
@@ -224,7 +227,7 @@ def start():
             os.system('clear')
             console.print(word.capitalize(), style="markdown.h1")
             print_word_with_dictionary(word, "(Inputted manually)", args.hideDictionary, translator, args.translateDestination, args.alwaysShowNews)
-            word = None
+            # word = None
             wordIndex = -1
         elif code.lower() == "s":
             print_news_for_the_word(word)
