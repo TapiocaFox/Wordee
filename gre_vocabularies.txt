@@ -82,7 +82,7 @@ aptitude
 adept
 deft
 inept
-aquarious
+aquarius
 aqueous
 arbitrary
 arbitrage
@@ -152,7 +152,8 @@ bust
 combustible
 cadaver
 cascade
-casualty coincide
+casualty
+coincide
 decadence
 occidental
 nonchalant

@@ -1,4 +1,4 @@
-import argparse, os, random, requests, json, os, signal, sys, vlc, textwrap
+import argparse, os, random, requests, json, os, signal, sys, textwrap
 from googletrans import Translator
 from rich.console import Console
 from rich.prompt import Prompt
@@ -25,8 +25,8 @@ parser.add_argument("-i", dest="filename", required=True,
 parser.add_argument("--hide", dest="hideDictionary", action='store_true',
                     help="Hide dictionary result. Until enter pressed.")
 
-parser.add_argument("--phonetic", dest="phonetic", action='store_true',
-                    help="Play phonetic sound.")
+# parser.add_argument("--phonetic", dest="phonetic", action='store_true',
+#                     help="Play phonetic sound.")
 
 parser.add_argument("--translate", dest="translateDestination", metavar="LANG",
         help="Translate destination language. For example \"ja\", \"ko\", \"zh-tw\".")
@@ -57,10 +57,11 @@ if __name__ == "__main__":
         os.system('clear')
         wordIndex = random.choice(range(len(words)))
         word = words[wordIndex]
-        if args.translateDestination:
-            wordTranslated = translator.translate(word, dest=args.translateDestination).text
 
         console.print(word.capitalize(), style="markdown.h1")
+        
+        if args.translateDestination:
+            wordTranslated = translator.translate(word, dest=args.translateDestination).text
 
         response = requests.get("https://api.dictionaryapi.dev/api/v2/entries/en/"+word)
     
@@ -89,9 +90,9 @@ if __name__ == "__main__":
             os.system('clear')
 
             if args.translateDestination:
-                console.print(word.capitalize()+" "+wordTranslated+" ("+str(wordIndex+1)+")", style="markdown.h1")
+                console.print(word.capitalize()+" [magenta]"+wordTranslated+"[/magenta] ("+str(wordIndex+1)+" of "+str(len(words))+")", style="markdown.h1")
             else:
-                console.print(word.capitalize()+" ("+str(wordIndex+1)+")", style="markdown.h1")
+                console.print(word.capitalize()+" ("+str(wordIndex+1)+" of "+str(len(words))+")", style="markdown.h1")
 
             
             if "phonetic" in responseJSON:
@@ -121,7 +122,7 @@ if __name__ == "__main__":
                             if "example" in definition:
                                 console.print(textWrapperDoubleIndents.fill("> "+definition["example"]), style="markdown.block_quote")
                     console.print("")
-                console.print("[link=https://www.google.com/search?q=define+"+word+"]Show definition on google.[/link]\n")
+                console.print("> [link=https://www.google.com/search?q=define+"+word+"]Show definition on google.[/link]\n")
 
         else:
             if(args.hideDictionary):
@@ -129,9 +130,9 @@ if __name__ == "__main__":
             os.system('clear')
             
             if args.translateDestination:
-                console.print(word.capitalize()+" "+wordTranslated+" ("+str(wordIndex+1)+")", style="markdown.h1")
+                console.print(word.capitalize()+" [magenta]"+wordTranslated+"[magenta] ("+str(wordIndex+1)+" of "+str(len(words))+")", style="markdown.h1")
             else:
-                console.print(word.capitalize()+" ("+str(wordIndex+1)+")", style="markdown.h1")
+                console.print(word.capitalize()+" ("+str(wordIndex+1)+" of "+str(len(words))+")", style="markdown.h1")
 
             console.print("Status code: "+str(response.status_code), style="red")
             if "title" in responseJSON:
@@ -141,6 +142,6 @@ if __name__ == "__main__":
             if "resolution" in responseJSON:
                 console.print(textWrapper.fill(responseJSON["resolution"]), style="bright_magenta")
             console.print("")
-            console.print("[link=https://www.google.com/search?q=define+"+word+"]Show definition on google.[/link]\n")
+            console.print("> [link=https://www.google.com/search?q=define+"+word+"]Show definition on google.[/link]\n")
             
 
