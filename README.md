@@ -1,7 +1,7 @@
 # Wordee
 Wordee is a word picker with dictionary and news attached. Help you memorize vocabularies using CLI.
 
-![](/imgs/screenshot_5.png)
+![](/imgs/screenshot_6.png)
 
 ## Pick a word
 ``python3 wordee.py --hide -i gre_vocabularies.txt`` picking from a words list file.

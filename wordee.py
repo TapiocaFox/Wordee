@@ -53,17 +53,24 @@ def is_valid_file(parser, arg):
     else:
         return open(arg, 'r')  # return an open file handle
 
-def get_print_news_for_the_word(word):
+def get_news_for_the_word(word):
     if word in wordNewsResultsCache:
         return wordNewsResultsCache[word]
     else:
-        # response = requests.get("https://newsapi.org/v2/everything?q="+word+"&sortBy=popularity&apiKey="+newsApiApiKey)
+        googlenews.clear()
         googlenews.search(word)
         newsResults = googlenews.results()
-        # console.print(googlenews.results())
-        # responseJSON = json.loads(response.text)
         wordNewsResultsCache[word] = newsResults
         return newsResults
+
+def print_news_for_the_word(word):
+    newsResults = get_news_for_the_word(word)
+    console.print("Related news:", style="bold")
+    for i, newsResult in enumerate(newsResults[:5]):
+        title = newsResult["title"].replace(word.capitalize(), "[bold]"+word+"[/bold]")
+        title = title.replace(word.lower(), "[bold]"+word+"[/bold]")
+        console.print(" %s. "%(i+1)+"[link="+newsResult["link"]+"]"+title)
+    console.print("")
 
 def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, translator=None, translateDestination=None, alwaysShowNews=None):
         if translator!=None:
@@ -80,7 +87,7 @@ def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, t
             wordResponseJSONCache[word] = responseJSON
 
         if alwaysShowNews:
-            newsResults = get_print_news_for_the_word(word)
+            newsResults = get_news_for_the_word(word)
 
         # console.print(type(responseJSON) is list)
 
@@ -140,10 +147,7 @@ def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, t
                 console.print("> [link=https://www.google.com/search?q=define+"+word+"]Show the definition on google.[/link]\n")
 
             if alwaysShowNews:
-                console.print("Related news:", style="bold")
-                for i, newsResult in enumerate(newsResults[:5]):
-                    console.print(" %s. "%(i+1)+"[link="+newsResult["link"]+"]"+newsResult["title"])
-                console.print("")
+                print_news_for_the_word(word)
 
         else:
             if(hideDictionary):
@@ -166,10 +170,7 @@ def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, t
             console.print("> [link=https://www.google.com/search?q=define+"+word+"]Show the definition on google.[/link]\n")
 
             if alwaysShowNews:
-                console.print("Related news:", style="bold")
-                for i, newsResult in enumerate(newsResults[:5]):
-                    console.print(" %s. "%(i+1)+"[link="+newsResult["link"]+"]"+newsResult["title"])
-                console.print("")
+                print_news_for_the_word(word)
         # console.print(responseJSON)
         # console.print(wordTranslation.extra_data)
 
@@ -219,11 +220,7 @@ def start():
             break
 
         elif code.lower() == "s":
-            newsResults = get_print_news_for_the_word(word)
-            console.print("\nRelated news:", style="bold")
-            for i, newsResult in enumerate(newsResults[:5]):
-                console.print(" %s. "%(i+1)+"[link="+newsResult["link"]+"]"+newsResult["title"])
-            console.print("")
+            print_news_for_the_word(word)
 
         elif code.lower() == "b":
             if word == None:
