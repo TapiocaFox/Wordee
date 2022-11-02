@@ -233,7 +233,10 @@ def start():
             wordIndex = -1
 
         elif code.lower() == "h":
-            console.print(wordsHistory[-5:])      
+            console.print("")
+            console.print("You have viewed "+str(len(wordsHistory))+" words, last 5 items:")
+            console.print(wordsHistory[-5:])  
+            console.print("")    
             
         elif code.lower() == "s":
             console.print("")
