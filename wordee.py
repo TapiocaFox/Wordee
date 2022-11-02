@@ -47,10 +47,10 @@ def asynchronous(func):
 def signal_handler(sig, frame):
     global exitOnCtrlC
     if exitOnCtrlC:
-        print('\nYou pressed Ctrl+C! Exiting.')
+        console.print('\nYou pressed Ctrl+C again! Exiting.', style="red")
         sys.exit(0)
     else:
-        print('\nYou pressed Ctrl+C!')
+        console.print('\nYou pressed Ctrl+C!', style="red")
         exitOnCtrlC = True
 
 def is_valid_file(parser, arg):
@@ -268,6 +268,8 @@ def start():
         elif code.lower() == "b":
             if word == None:
                 console.print("Word not selected.", style="red")
+            elif wordIndex == -1:
+                console.print("Word not indexed in the words list.", style="red")
             elif word.lower() not in bookmarkedWords:
                 with open(bookmarkedWordsFilename, 'w+') as bookmarkedFile:
                     bookmarkedWords.append(word.lower())
