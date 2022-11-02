@@ -180,7 +180,7 @@ def start():
     bookmarkedWordsFilename = os.path.splitext(args.filename.name)[0]+bookmarked_surfix+".txt"
 
     words = args.filename.read().splitlines()
-    words = list(word for word in words if word)
+    words = list(word.lower() for word in words if word)
 
     wordsHistory = []
 
@@ -208,6 +208,16 @@ def start():
         bookmarkedWords = []
     word = None
     wordIndex = -1
+    def print_word_with_dictionary_and_surfix():
+        console.print(word.capitalize(), style="markdown.h1")
+        dictionary_bookmarked_surfix = " [green bold]•[/green bold]" if word.lower() in bookmarkedWords else ""
+        if wordIndex == -1:
+            index_surfix = "(Not indexed)"
+        else:
+            index_surfix = "("+str(wordIndex+1)+" of "+str(len(words))+")"
+
+        print_word_with_dictionary(word, index_surfix+dictionary_bookmarked_surfix, args.hideDictionary, translator, args.translateDestination, args.alwaysShowNews)
+
     while True:
         dictionary_bookmarked_surfix = ""
         if word == None:
@@ -227,12 +237,14 @@ def start():
             break
 
         elif code.lower() == "i":
-            word = Prompt.ask("Word: ")
+            word = Prompt.ask("Word")
+            if word.lower() in words:
+                wordIndex = words.index(word.lower())
+            else:
+                wordIndex = -1
             wordsHistory.append(word)
             os.system('clear')
-            console.print(word.capitalize(), style="markdown.h1")
-            print_word_with_dictionary(word, "(Inputted manually)", args.hideDictionary, translator, args.translateDestination, args.alwaysShowNews)
-            wordIndex = -1
+            print_word_with_dictionary_and_surfix()
 
         elif code.lower() == "h":
             console.print("")
@@ -251,25 +263,18 @@ def start():
                 with open(bookmarkedWordsFilename, 'w+') as bookmarkedFile:
                     bookmarkedWords.append(word.lower())
                     bookmarkedFile.write("\n".join(bookmarkedWords))
-                    # console.print(bookmarkedWords)
-                    dictionary_bookmarked_surfix = " [green bold]•[/green bold]" if word.lower() in bookmarkedWords else ""
-                    print_word_with_dictionary(word, "("+str(wordIndex+1)+" of "+str(len(words))+")"+dictionary_bookmarked_surfix, False, translator, args.translateDestination, args.alwaysShowNews)
+                    print_word_with_dictionary_and_surfix()
             else:
                 with open(bookmarkedWordsFilename, 'w+') as bookmarkedFile:
                     bookmarkedWords.remove(word.lower())
                     bookmarkedFile.write("\n".join(bookmarkedWords))
-                    dictionary_bookmarked_surfix = " [green bold]•[/green bold]" if word.lower() in bookmarkedWords else ""
-                    print_word_with_dictionary(word, "("+str(wordIndex+1)+" of "+str(len(words))+")"+dictionary_bookmarked_surfix, False, translator, args.translateDestination, args.alwaysShowNews)
-
+                    print_word_with_dictionary_and_surfix()
         else:
             os.system('clear')
             wordIndex = random.choice(range(len(words)))
             word = words[wordIndex]
             wordsHistory.append(word)
-            console.print(word.capitalize(), style="markdown.h1")
-            dictionary_bookmarked_surfix = " [green bold]•[/green bold]" if word.lower() in bookmarkedWords else ""
-            print_word_with_dictionary(word, "("+str(wordIndex+1)+" of "+str(len(words))+")"+dictionary_bookmarked_surfix, args.hideDictionary, translator, args.translateDestination, args.alwaysShowNews)
-
+            print_word_with_dictionary_and_surfix()
 
 signal.signal(signal.SIGINT, signal_handler)
 
