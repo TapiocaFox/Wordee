@@ -189,7 +189,7 @@ def start():
 
     wordsHistory = []
 
-    console.print("[bold]📖 Wordee[/bold]\nA random word picker with dictionary and news attached.\ncopyright©2022 magneticchen. GPLv3 License.\n")
+    console.print("[bold]📖 Wordee[/bold]\nA random word picker with dictionary and news attached.\ncopyright©2022 magneticchen. Taiwan. GPLv3 License.\n")
     console.print(textWrapper.fill("Total "+str(len(words))+" words in the file."))
     console.print(textWrapper.fill("> "+args.filename.name), style="markdown.h1")
     # console.print(textWrapper.fill("> "+bookmarkedWordsFilename), style="markdown.h1")
@@ -212,7 +212,9 @@ def start():
     wordIndex = -1
 
     def print_word_with_dictionary_and_surfix(hideDictionary=args.hideDictionary):
-        console.print(word.capitalize(), style="markdown.h1")
+        if hideDictionary or word.lower() not in wordDictionaryResponseJSONCache:
+            console.print(word.capitalize(), style="markdown.h1")
+            
         dictionary_bookmarked_surfix = " [green bold]•[/green bold]" if word.lower() in bookmarkedWords else ""
         if wordIndex == -1:
             index_surfix = "(Not indexed)"
