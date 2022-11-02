@@ -1184,7 +1184,7 @@ pyromania
 quirky
 acquiesce
 acquiescence
-quiesecent
+quiescent
 tranquil
 abrasive
 eradicate
