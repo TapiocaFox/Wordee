@@ -4,6 +4,8 @@ from rich.console import Console
 from rich.prompt import Prompt
 from GoogleNews import GoogleNews
 
+wordee_description = "Wordee, a random word picker with dictionary and news attached."
+
 googlenews = GoogleNews(lang="en")
 console = Console()
 bookmarked_surfix = "_bookmarked"
@@ -11,7 +13,7 @@ bookmarked_surfix = "_bookmarked"
 textWrapper = textwrap.TextWrapper(initial_indent=" ", subsequent_indent=" ")
 textWrapperDoubleIndents = textwrap.TextWrapper(initial_indent="    ", subsequent_indent="    ")
 
-parser = argparse.ArgumentParser(description='Wordee, a random word picker with with dictionary and news attached.')
+parser = argparse.ArgumentParser(description=wordee_description)
 
 parser.add_argument("-i", dest="filename", required=True,
                     help="Specify input text file.", metavar="FILE",
@@ -32,7 +34,8 @@ parser.add_argument("--translate", dest="translateDestination", metavar="LANG",
 parser.add_argument("--news", dest="alwaysShowNews", action='store_true',
         help="Always show the news related to the word. Can be a little bit slower.")
 
-wordResponseJSONCache = {}
+exitOnCtrlC = False
+wordDictionaryResponseJSONCache = {}
 wordNewsResultsCache = {}
 
 def asynchronous(func):
@@ -44,8 +47,13 @@ def asynchronous(func):
     return wrapper
 
 def signal_handler(sig, frame):
-    print('\nYou pressed Ctrl+C!')
-    sys.exit(0)
+    global exitOnCtrlC
+    if exitOnCtrlC:
+        print('\nYou pressed Ctrl+C! Exiting.')
+        sys.exit(0)
+    else:
+        print('\nYou pressed Ctrl+C!')
+        exitOnCtrlC = True
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
@@ -77,14 +85,14 @@ def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, t
             wordTranslation = translator.translate(word, dest=translateDestination)
             wordTranslated = wordTranslation.text
 
-        if word in wordResponseJSONCache:
-            responseJSON = wordResponseJSONCache[word]
+        if word in wordDictionaryResponseJSONCache:
+            responseJSON = wordDictionaryResponseJSONCache[word]
             ok = True
         else:
             response = requests.get("https://api.dictionaryapi.dev/api/v2/entries/en/"+word)
             ok = response.ok
             responseJSON = json.loads(response.text)
-            wordResponseJSONCache[word] = responseJSON
+            wordDictionaryResponseJSONCache[word] = responseJSON
 
         if alwaysShowNews:
             newsResults = get_news_for_the_word(word)
@@ -175,6 +183,7 @@ def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, t
         # console.print(wordTranslation.extra_data)
 
 def start():
+    global exitOnCtrlC
     args = parser.parse_args()
 
     bookmarkedWordsFilename = os.path.splitext(args.filename.name)[0]+bookmarked_surfix+".txt"
@@ -184,7 +193,8 @@ def start():
 
     wordsHistory = []
 
-    console.print("[bold]📖 Wordee[/bold]\nA word picker with dictionary api attached.\ncopyright©2022 magneticchen. GPLv3 License.\n")
+    # console.print("")
+    console.print("[bold]📖 Wordee[/bold]\nA random word picker with dictionary and news attached.\ncopyright©2022 magneticchen. GPLv3 License.\n")
     console.print(textWrapper.fill("Total "+str(len(words))+" words in the file."))
     console.print(textWrapper.fill("> "+args.filename.name), style="markdown.h1")
     # console.print(textWrapper.fill("> "+bookmarkedWordsFilename), style="markdown.h1")
@@ -208,7 +218,8 @@ def start():
         bookmarkedWords = []
     word = None
     wordIndex = -1
-    def print_word_with_dictionary_and_surfix():
+
+    def print_word_with_dictionary_and_surfix(hideDictionary=args.hideDictionary):
         console.print(word.capitalize(), style="markdown.h1")
         dictionary_bookmarked_surfix = " [green bold]•[/green bold]" if word.lower() in bookmarkedWords else ""
         if wordIndex == -1:
@@ -216,22 +227,19 @@ def start():
         else:
             index_surfix = "("+str(wordIndex+1)+" of "+str(len(words))+")"
 
-        print_word_with_dictionary(word, index_surfix+dictionary_bookmarked_surfix, args.hideDictionary, translator, args.translateDestination, args.alwaysShowNews)
+        print_word_with_dictionary(word, index_surfix+dictionary_bookmarked_surfix, hideDictionary, translator, args.translateDestination, args.alwaysShowNews)
 
     while True:
-        dictionary_bookmarked_surfix = ""
+        exitOnCtrlC = False
+
         if word == None:
             code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, [[bold]Q[/bold]]uit\n", default="N")
-            dictionary_bookmarked_surfix = ""
         elif wordIndex == -1:
             code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, [[bold]S[/bold]]how news, [[bold]Q[/bold]]uit\n", default="N")
-            dictionary_bookmarked_surfix = ""
         elif word.lower() not in bookmarkedWords:
             code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, [[bold]S[/bold]]how news, [[bold]B[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
-            dictionary_bookmarked_surfix = ""
         else:
             code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, [[bold]S[/bold]]how news, Un[[bold]b[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
-            dictionary_bookmarked_surfix = " [green bold]•[/green bold]"
 
         if code.lower() == "q":
             break
@@ -263,12 +271,12 @@ def start():
                 with open(bookmarkedWordsFilename, 'w+') as bookmarkedFile:
                     bookmarkedWords.append(word.lower())
                     bookmarkedFile.write("\n".join(bookmarkedWords))
-                    print_word_with_dictionary_and_surfix()
+                    print_word_with_dictionary_and_surfix(False)
             else:
                 with open(bookmarkedWordsFilename, 'w+') as bookmarkedFile:
                     bookmarkedWords.remove(word.lower())
                     bookmarkedFile.write("\n".join(bookmarkedWords))
-                    print_word_with_dictionary_and_surfix()
+                    print_word_with_dictionary_and_surfix(False)
         else:
             os.system('clear')
             wordIndex = random.choice(range(len(words)))
