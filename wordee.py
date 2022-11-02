@@ -4,7 +4,7 @@ from rich.console import Console
 from rich.prompt import Prompt
 from GoogleNews import GoogleNews
 
-wordee_description = "Wordee, a random word picker with dictionary and news attached."
+wordee_description = "📖 Wordee, a random word picker with dictionary and news attached."
 
 googlenews = GoogleNews(lang="en")
 console = Console()
@@ -20,16 +20,13 @@ parser.add_argument("-i", dest="filename", required=True,
                     type=lambda x: is_valid_file(parser, x))
 
 parser.add_argument("--hide", dest="hideDictionary", action='store_true',
-                    help="Hide dictionary result. Until enter pressed.")
+                    help="Hide the dictionary result. Until enter pressed.")
 
 # parser.add_argument("--phonetic", dest="phonetic", action='store_true',
 #                     help="Play phonetic sound.")
 
 parser.add_argument("--translate", dest="translateDestination", metavar="LANG",
         help="Translate destination language. For example \"ja\", \"ko\", \"zh-tw\".")
-
-# parser.add_argument("--news-api-key", dest="newsApiApiKey", metavar="LANG",
-#         help="API key for https://newsapi.org.")
 
 parser.add_argument("--news", dest="alwaysShowNews", action='store_true',
         help="Always show the news related to the word. Can be a little bit slower.")
@@ -179,8 +176,7 @@ def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, t
 
             if alwaysShowNews:
                 print_news_for_the_word(word)
-        # console.print(responseJSON)
-        # console.print(wordTranslation.extra_data)
+
 
 def start():
     global exitOnCtrlC
@@ -193,12 +189,10 @@ def start():
 
     wordsHistory = []
 
-    # console.print("")
     console.print("[bold]📖 Wordee[/bold]\nA random word picker with dictionary and news attached.\ncopyright©2022 magneticchen. GPLv3 License.\n")
     console.print(textWrapper.fill("Total "+str(len(words))+" words in the file."))
     console.print(textWrapper.fill("> "+args.filename.name), style="markdown.h1")
     # console.print(textWrapper.fill("> "+bookmarkedWordsFilename), style="markdown.h1")
-    # console.print(bookmarkedWordsFilename)
     console.print("")
 
     translator = None
@@ -206,9 +200,7 @@ def start():
         translator = Translator()
         console.print(textWrapper.fill(translator.translate("You have enabled the Translation.", dest=args.translateDestination).text))
         console.print(textWrapper.fill(translator.translate("Translation destionation: ", dest=args.translateDestination).text+"\""+args.translateDestination+"\""))
-        # console.print("Translation destionation: \""+args.translateDestination+"\"")
         console.print("")
-    # console.print(lines)
 
     if os.path.isfile(bookmarkedWordsFilename):
         with open(bookmarkedWordsFilename, 'r+') as bookmarkedFile:
