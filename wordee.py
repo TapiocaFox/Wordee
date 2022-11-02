@@ -177,7 +177,7 @@ def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, t
 def start():
     args = parser.parse_args()
 
-    bookmarkedWordsFilename = args.filename.name+bookmarked_surfix+".txt"
+    bookmarkedWordsFilename = os.path.splitext(args.filename.name)[0]+bookmarked_surfix+".txt"
 
     words = args.filename.read().splitlines()
     words = list(word for word in words if word)
@@ -187,6 +187,8 @@ def start():
     console.print("[bold]📖 Wordee[/bold]\nA word picker with dictionary api attached.\ncopyright©2022 magneticchen. GPLv3 License.\n")
     console.print(textWrapper.fill("Total "+str(len(words))+" words in the file."))
     console.print(textWrapper.fill("> "+args.filename.name), style="markdown.h1")
+    # console.print(textWrapper.fill("> "+bookmarkedWordsFilename), style="markdown.h1")
+    # console.print(bookmarkedWordsFilename)
     console.print("")
 
     translator = None
@@ -265,6 +267,7 @@ def start():
             word = words[wordIndex]
             wordsHistory.append(word)
             console.print(word.capitalize(), style="markdown.h1")
+            dictionary_bookmarked_surfix = " [green bold]•[/green bold]" if word.lower() in bookmarkedWords else ""
             print_word_with_dictionary(word, "("+str(wordIndex+1)+" of "+str(len(words))+")"+dictionary_bookmarked_surfix, args.hideDictionary, translator, args.translateDestination, args.alwaysShowNews)
 
 
