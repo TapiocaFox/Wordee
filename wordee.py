@@ -251,7 +251,7 @@ def start():
                 with open(bookmarkedWordsFilename, 'w+') as bookmarkedFile:
                     bookmarkedWords.append(word.lower())
                     bookmarkedFile.write("\n".join(bookmarkedWords))
-                    console.print(bookmarkedWords)
+                    # console.print(bookmarkedWords)
                     dictionary_bookmarked_surfix = " [green bold]•[/green bold]" if word.lower() in bookmarkedWords else ""
                     print_word_with_dictionary(word, "("+str(wordIndex+1)+" of "+str(len(words))+")"+dictionary_bookmarked_surfix, False, translator, args.translateDestination, args.alwaysShowNews)
             else:
