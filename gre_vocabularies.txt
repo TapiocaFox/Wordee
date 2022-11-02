@@ -623,7 +623,7 @@ haphazard
 mishap
 harbinger
 herald
-hereditry
+hereditary
 herbivorous
 adhere
 adherent
@@ -1947,7 +1947,7 @@ plastic
 poignant
 polemical
 pragmatic
-preequisite
+prerequisite
 presage
 pretentious
 prickly

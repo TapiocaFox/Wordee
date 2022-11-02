@@ -241,7 +241,12 @@ def start():
             break
 
         elif code.lower() == "i":
-            word = Prompt.ask("Word")
+            newWord = Prompt.ask("Word")
+            if newWord == None or len(newWord) == 0:
+                continue
+            else:
+                word = newWord
+
             if word.lower() in words:
                 wordIndex = words.index(word.lower())
             else:
