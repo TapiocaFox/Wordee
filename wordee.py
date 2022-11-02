@@ -11,6 +11,7 @@ console = Console()
 bookmarked_surfix = "_bookmarked"
 
 textWrapper = textwrap.TextWrapper(initial_indent=" ", subsequent_indent=" ")
+newsWrapper = textwrap.TextWrapper(width=90, initial_indent=" ", subsequent_indent=" ")
 textWrapperDoubleIndents = textwrap.TextWrapper(initial_indent="    ", subsequent_indent="    ")
 
 parser = argparse.ArgumentParser(description=wordee_description)
@@ -74,7 +75,8 @@ def print_news_for_the_word(word):
     for i, newsResult in enumerate(newsResults[:5]):
         title = newsResult["title"].replace(word.capitalize(), "[bold]"+word.capitalize()+"[/bold]")
         title = title.replace(word.lower(), "[bold]"+word+"[/bold]")
-        console.print(" %s. "%(i+1)+"[link="+newsResult["link"]+"]"+title)
+        # console.print(" %s. "%(i+1)+"[link="+newsResult["link"]+"]"+title)
+        console.print(newsWrapper.fill("%s. "%(i+1)+title).replace("%s. "%(i+1), "%s. "%(i+1)+"[link="+newsResult["link"]+"]"))
     console.print("")
 
 def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, translator=None, translateDestination=None, alwaysShowNews=None):
@@ -149,7 +151,7 @@ def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, t
                             if "example" in definition:
                                 console.print(textWrapperDoubleIndents.fill("> "+definition["example"]), style="markdown.block_quote")
                     console.print("")
-                console.print("> [link=https://www.google.com/search?q=define+"+word+"]Show the definition on google.[/link]\n")
+                console.print("> [link=https://www.google.com/search?q=define+"+word+"]🌎 Show the definition on google.[/link]\n")
 
             if alwaysShowNews:
                 print_news_for_the_word(word)
@@ -172,7 +174,7 @@ def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, t
             if "resolution" in responseJSON:
                 console.print(textWrapper.fill(responseJSON["resolution"]), style="bright_magenta")
             console.print("")
-            console.print("> [link=https://www.google.com/search?q=define+"+word+"]Show the definition on google.[/link]\n")
+            console.print("> [link=https://www.google.com/search?q=define+"+word+"]🌎 Show the definition on google.[/link]\n")
 
             if alwaysShowNews:
                 print_news_for_the_word(word)
