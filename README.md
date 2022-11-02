@@ -1,6 +1,6 @@
 # Wordee
 Wordee is a random word picker with dictionary and news attached. Help you memorize vocabularies using CLI.
-Useful for english test preparations like TOEFL or GRE.
+Useful for english tests preparations like TOEFL or GRE.
 
 ![](/imgs/screenshot_6.png)
 
