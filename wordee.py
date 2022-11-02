@@ -182,6 +182,8 @@ def start():
     words = args.filename.read().splitlines()
     words = list(word for word in words if word)
 
+    wordsHistory = []
+
     console.print("[bold]📖 Wordee[/bold]\nA word picker with dictionary api attached.\ncopyright©2022 magneticchen. GPLv3 License.\n")
     console.print(textWrapper.fill("Total "+str(len(words))+" words in the file."))
     console.print(textWrapper.fill("> "+args.filename.name), style="markdown.h1")
@@ -207,16 +209,16 @@ def start():
     while True:
         dictionary_bookmarked_surfix = ""
         if word == None:
-            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]Q[/bold]]uit\n", default="N")
+            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, [[bold]Q[/bold]]uit\n", default="N")
             dictionary_bookmarked_surfix = ""
         elif wordIndex == -1:
-            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]S[/bold]]how news, [[bold]Q[/bold]]uit\n", default="N")
+            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, [[bold]S[/bold]]how news, [[bold]Q[/bold]]uit\n", default="N")
             dictionary_bookmarked_surfix = ""
         elif word.lower() not in bookmarkedWords:
-            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]S[/bold]]how news, [[bold]B[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
+            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, [[bold]S[/bold]]how news, [[bold]B[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
             dictionary_bookmarked_surfix = ""
         else:
-            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]S[/bold]]how news, Un[[bold]b[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
+            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, [[bold]S[/bold]]how news, Un[[bold]b[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
             dictionary_bookmarked_surfix = " [green bold]•[/green bold]"
 
         if code.lower() == "q":
@@ -224,11 +226,15 @@ def start():
 
         elif code.lower() == "i":
             word = Prompt.ask("Word: ")
+            wordsHistory.append(word)
             os.system('clear')
             console.print(word.capitalize(), style="markdown.h1")
             print_word_with_dictionary(word, "(Inputted manually)", args.hideDictionary, translator, args.translateDestination, args.alwaysShowNews)
-            # word = None
             wordIndex = -1
+
+        elif code.lower() == "h":
+            console.print(wordsHistory[-5:])      
+            
         elif code.lower() == "s":
             console.print("")
             print_news_for_the_word(word)
@@ -254,6 +260,7 @@ def start():
             os.system('clear')
             wordIndex = random.choice(range(len(words)))
             word = words[wordIndex]
+            wordsHistory.append(word)
             console.print(word.capitalize(), style="markdown.h1")
             print_word_with_dictionary(word, "("+str(wordIndex+1)+" of "+str(len(words))+")"+dictionary_bookmarked_surfix, args.hideDictionary, translator, args.translateDestination, args.alwaysShowNews)
 
