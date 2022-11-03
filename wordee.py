@@ -257,8 +257,17 @@ def start():
 
         elif code.lower() == "h":
             console.print("")
-            console.print("You have viewed "+str(len(wordsHistory))+" words, last 5 items:")
-            console.print(wordsHistory[-5:])  
+            console.print("[bold]Historical reports[/bold]:")  
+            if(len(wordsHistory)==0):
+                console.print(" [bold]Viewed[/bold] none.")
+            else:
+                console.print(" [bold]Viewed[/bold] "+str(len(wordsHistory))+" words, last 5 items:")
+                console.print(" > "+str(wordsHistory[-5:]))  
+            if(len(bookmarkedWords)==0):
+                console.print(" [bold]Bookmarked[/bold] none.")  
+            else:
+                console.print(" [bold]Bookmarked[/bold] "+str(len(bookmarkedWords))+" words, last 5 items:")
+                console.print(" > "+str(bookmarkedWords[-5:]))  
             console.print("")    
             
         elif code.lower() == "s":
@@ -280,12 +289,14 @@ def start():
                     bookmarkedWords.remove(word.lower())
                     bookmarkedFile.write("\n".join(bookmarkedWords))
                     print_word_with_dictionary_and_surfix(False)
-        else:
+        elif code.lower() == "n" or len(code) == 0:
             os.system('clear')
             wordIndex = random.choice(range(len(words)))
             word = words[wordIndex]
             wordsHistory.append(word)
             print_word_with_dictionary_and_surfix()
+        else:
+            console.print("Unknown action \""+code+"\".", style="red")
 
 signal.signal(signal.SIGINT, signal_handler)
 
