@@ -231,11 +231,11 @@ def start():
         if word == None:
             code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, [[bold]Q[/bold]]uit\n", default="N")
         elif wordIndex == -1:
-            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, [[bold]S[/bold]]how news, [[bold]Q[/bold]]uit\n", default="N")
+            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, New[[bold]S[/bold]], [[bold]Q[/bold]]uit\n", default="N")
         elif word.lower() not in bookmarkedWords:
-            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, [[bold]S[/bold]]how news, [[bold]B[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
+            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, New[[bold]S[/bold]], [[bold]B[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
         else:
-            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, [[bold]S[/bold]]how news, Un[[bold]b[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
+            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, New[[bold]S[/bold]], Un[[bold]b[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
 
         if code.lower() == "q":
             break
