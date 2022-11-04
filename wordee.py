@@ -32,6 +32,9 @@ parser.add_argument("--translate", dest="translateDestination", metavar="LANG",
 parser.add_argument("--news", dest="alwaysShowNews", action='store_true',
         help="Always show the news related to the word. Can be a little bit slower.")
 
+parser.add_argument("--bookmarked_prob", dest="bookmarkedProbability", nargs='?', metavar="FLOAT",
+        help="Specify probability to pick next random word from bookmarked list.", const=0.5, type=float, default=0)
+
 exitOnCtrlC = False
 wordDictionaryResponseJSONCache = {}
 wordNewsResultsCache = {}
@@ -183,6 +186,7 @@ def print_word_with_dictionary(word, wordDescription="", hideDictionary=False, t
 def start():
     global exitOnCtrlC
     args = parser.parse_args()
+    bookmarkedProbability = float(args.bookmarkedProbability)
 
     bookmarkedWordsFilename = os.path.splitext(args.filename.name)[0]+bookmarked_surfix+".txt"
 
@@ -229,13 +233,13 @@ def start():
         exitOnCtrlC = False
 
         if word == None:
-            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, [[bold]Q[/bold]]uit\n", default="N")
+            code = Prompt.ask("Actions: [[bold]R[/bold]]andom, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, [[bold]Q[/bold]]uit\n", default="R")
         elif wordIndex == -1:
-            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, New[[bold]S[/bold]], [[bold]Q[/bold]]uit\n", default="N")
+            code = Prompt.ask("Actions: [[bold]R[/bold]]andom, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, [[bold]N[/bold]]ews, [[bold]Q[/bold]]uit\n", default="R")
         elif word.lower() not in bookmarkedWords:
-            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, New[[bold]S[/bold]], [[bold]B[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
+            code = Prompt.ask("Actions: [[bold]R[/bold]]andom, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, [[bold]N[/bold]]ews, [[bold]B[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="R")
         else:
-            code = Prompt.ask("Actions: [[bold]N[/bold]]ext word, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, New[[bold]S[/bold]], Un[[bold]b[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="N")
+            code = Prompt.ask("Actions: [[bold]R[/bold]]andom, [[bold]I[/bold]]nput a word, [[bold]H[/bold]]istory, [[bold]N[/bold]]ews, Un[[bold]b[/bold]]ookmark, [[bold]Q[/bold]]uit\n", default="R")
 
         if code.lower() == "q":
             break
@@ -270,9 +274,13 @@ def start():
                 console.print(" > "+str(bookmarkedWords[-5:]))  
             console.print("")    
             
-        elif code.lower() == "s":
-            console.print("")
-            print_news_for_the_word(word)
+        elif code.lower() == "n":
+            if newWord == None or len(newWord) == 0:
+                console.print("")
+                console.print('Word not selected!', style="red")
+            else:
+                console.print("")
+                print_news_for_the_word(word)
 
         elif code.lower() == "b":
             if word == None:
@@ -289,10 +297,16 @@ def start():
                     bookmarkedWords.remove(word.lower())
                     bookmarkedFile.write("\n".join(bookmarkedWords))
                     print_word_with_dictionary_and_surfix(False)
-        elif code.lower() == "n" or len(code) == 0:
+        elif code.lower() == "r" or len(code) == 0:
             os.system('clear')
-            wordIndex = random.choice(range(len(words)))
-            word = words[wordIndex]
+            if len(bookmarkedWords)>0 and random.random() < bookmarkedProbability:
+                # console.print()
+                word = random.choice(bookmarkedWords)
+                wordIndex = bookmarkedWords.index(word)
+            else:
+                wordIndex = random.choice(range(len(words)))
+                word = words[wordIndex]
+            
             wordsHistory.append(word)
             print_word_with_dictionary_and_surfix()
         else:
