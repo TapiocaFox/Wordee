@@ -275,7 +275,7 @@ def start():
             console.print("")    
             
         elif code.lower() == "n":
-            if newWord == None or len(newWord) == 0:
+            if word == None or len(word) == 0:
                 console.print("")
                 console.print('Word not selected!', style="red")
             else:
