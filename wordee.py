@@ -32,8 +32,8 @@ parser.add_argument("--translate", dest="translateDestination", metavar="LANG",
 parser.add_argument("--news", dest="alwaysShowNews", action='store_true',
         help="Always show the news related to the word. Can be a little bit slower.")
 
-parser.add_argument("--bookmarked_prob", dest="bookmarkedProbability", nargs='?', metavar="FLOAT",
-        help="Specify probability to pick next random word from bookmarked list.", const=0.5, type=float, default=0)
+parser.add_argument("--bookmarked", dest="bookmarkedProbability", nargs='?', metavar="FLOAT",
+        help="Specify probability to pick next random word from bookmarked list.", const=1, type=float, default=0)
 
 exitOnCtrlC = False
 wordDictionaryResponseJSONCache = {}
